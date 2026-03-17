@@ -1,5 +1,6 @@
 import imaplib
 import email
+import email.message
 from email.header import decode_header
 from email.utils import parsedate_to_datetime
 from datetime import datetime
@@ -150,7 +151,7 @@ class ImapProvider(BaseEmailProvider):
         """Parse 'Name <email>' into (name, email)."""
         if "<" in from_raw and ">" in from_raw:
             name = from_raw.split("<")[0].strip().strip('"')
-            addr = from_raw.split("<")[1].split(">")[0].strip()
+            addr = from_raw.split("<")[1].split(">") [0].strip()
         else:
             name = ""
             addr = from_raw.strip()
@@ -203,7 +204,7 @@ class ImapProvider(BaseEmailProvider):
         success = True
         for msg_id in message_ids:
             try:
-                self.connection.store(msg_id.encode(), "+FLAGS", "\\Deleted")
+                self.connection.store(msg_id.encode(), "+FLAGS", "\Deleted")
             except Exception as e:
                 print(f"  ⚠ Error eliminando mensaje {msg_id}: {e}")
                 success = False

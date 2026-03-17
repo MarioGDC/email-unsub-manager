@@ -26,6 +26,19 @@ class Settings:
     OUTLOOK_AUTHORITY: str = f"https://login.microsoftonline.com/{os.getenv('OUTLOOK_TENANT_ID', 'common')}"
     OUTLOOK_GRAPH_ENDPOINT: str = "https://graph.microsoft.com/v1.0"
 
+    # IMAP (Universal - no requiere Azure ni Google Cloud)
+    IMAP_EMAIL: str = os.getenv("IMAP_EMAIL", "")
+    IMAP_PASSWORD: str = os.getenv("IMAP_PASSWORD", "")
+    IMAP_SERVER: str = os.getenv("IMAP_SERVER", "")
+    IMAP_PORT: int = int(os.getenv("IMAP_PORT", "993"))
+
+    # Predefined IMAP servers
+    IMAP_SERVERS: dict = {
+        "outlook": "outlook.office365.com",
+        "gmail": "imap.gmail.com",
+        "yahoo": "imap.mail.yahoo.com",
+    }
+
     # General
     MAX_EMAILS_TO_SCAN: int = int(os.getenv("MAX_EMAILS_TO_SCAN", "500"))
 

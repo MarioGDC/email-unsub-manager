@@ -17,5 +17,8 @@ rich>=13.6.0
 # HTML parsing
 beautifulsoup4>=4.12.0
 
+# IMAP (optional - enhanced IMAP support; the provider also works with stdlib imaplib)
+imap-tools>=1.5.0
+
 # Testing
 pytest>=7.4.0

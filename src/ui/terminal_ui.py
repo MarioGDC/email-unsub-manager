@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import getpass
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
@@ -42,13 +44,65 @@ class TerminalUI:
             )
         )
 
-    def select_provider(self) -> str:
-        """Ask the user which email provider to use. Returns 'gmail' or 'outlook'."""
-        console.print("\n[bold]Selecciona tu proveedor de correo:[/bold]")
-        console.print("  [cyan]1[/cyan] Gmail")
-        console.print("  [cyan]2[/cyan] Outlook / Microsoft 365")
-        choice = Prompt.ask("Opción", choices=["1", "2"], default="1")
-        return "gmail" if choice == "1" else "outlook"
+    def select_provider(self) -> tuple[str, dict]:
+        """Ask the user which email provider to use.
+
+        Returns a tuple of (provider_key, kwargs) where kwargs are passed to
+        the provider constructor.  For IMAP, kwargs contains email_address,
+        password, imap_server and imap_port.
+        """
+        from config.settings import settings
+
+        console.print("\n[bold]¿Qué proveedor de correo quieres usar?[/bold]\n")
+        console.print("  [cyan][1][/cyan] 📫 Gmail (API) - requiere Google Cloud Console")
+        console.print("  [cyan][2][/cyan] 📬 Outlook (API) - requiere Azure Portal")
+        console.print("  [cyan][3][/cyan] 🌐 IMAP Universal [bold green](Recomendado)[/bold green] - solo email + contraseña")
+        console.print("  [cyan][4][/cyan] ❌ Salir\n")
+        choice = Prompt.ask("Opción", choices=["1", "2", "3", "4"], default="3")
+
+        if choice == "1":
+            return "gmail", {}
+        elif choice == "2":
+            return "outlook", {}
+        elif choice == "4":
+            import sys
+            console.print("[dim]Hasta luego.[/dim]")
+            sys.exit(0)
+        else:
+            # IMAP - collect credentials interactively
+            return "imap", self._collect_imap_credentials(settings)
+
+    def _collect_imap_credentials(self, settings) -> dict:
+        """Interactively collect IMAP connection details from the user."""
+        console.print("\n[bold cyan]🌐 Configuración IMAP Universal[/bold cyan]\n")
+        console.print("  [cyan][1][/cyan] Outlook / Hotmail / Live")
+        console.print("  [cyan][2][/cyan] Gmail")
+        console.print("  [cyan][3][/cyan] Yahoo")
+        console.print("  [cyan][4][/cyan] Otro (servidor personalizado)\n")
+        provider_choice = Prompt.ask("Proveedor de correo", choices=["1", "2", "3", "4"], default="1")
+
+        server_map = {
+            "1": settings.IMAP_SERVERS["outlook"],
+            "2": settings.IMAP_SERVERS["gmail"],
+            "3": settings.IMAP_SERVERS["yahoo"],
+        }
+
+        if provider_choice in server_map:
+            imap_server = server_map[provider_choice]
+        else:
+            imap_server = Prompt.ask("Servidor IMAP (ej: imap.tudominio.com)")
+
+        email_address = Prompt.ask("Dirección de email")
+
+        # Mask password input so it is not visible on screen
+        password = getpass.getpass(prompt="Contraseña (no se mostrará en pantalla): ")
+
+        return {
+            "email_address": email_address,
+            "password": password,
+            "imap_server": imap_server,
+            "imap_port": settings.IMAP_PORT,
+        }
 
     # ------------------------------------------------------------------
     # Progress spinners

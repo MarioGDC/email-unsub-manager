@@ -9,13 +9,16 @@ from src.providers.base_provider import BaseEmailProvider
 from src.ui.terminal_ui import TerminalUI
 
 
-def _get_provider(provider_key: str) -> BaseEmailProvider:
+def _get_provider(provider_key: str, **kwargs) -> BaseEmailProvider:
     if provider_key == "gmail":
         from src.providers.gmail_provider import GmailProvider
         return GmailProvider()
     elif provider_key == "outlook":
         from src.providers.outlook_provider import OutlookProvider
         return OutlookProvider()
+    elif provider_key == "imap":
+        from src.providers.imap_provider import ImapProvider
+        return ImapProvider(**kwargs)
     else:
         raise ValueError(f"Unknown provider: {provider_key}")
 
@@ -25,8 +28,8 @@ def main() -> None:
     ui.show_welcome()
 
     # 1. Select provider
-    provider_key = ui.select_provider()
-    provider = _get_provider(provider_key)
+    provider_key, imap_kwargs = ui.select_provider()
+    provider = _get_provider(provider_key, **imap_kwargs)
 
     # 2. Authenticate
     ui.show_scan_start(provider.get_provider_name())
